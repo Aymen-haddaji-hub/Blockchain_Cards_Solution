@@ -1,17 +1,23 @@
-# Blockchain_Cards_Solution
-Using Hyperledger Fabric a Full creation of an advanced Network.
-
 # Setup
-These steps describes a Hyperledger fabric 2.2.x installation on Ubuntu 20.04 LTS.
+These steps describes a Hyperledger fabric 2.2.x installation on Ubuntu 20.04 LTS x64 machine.
+
+
+
+## Perparations
+The following steps are required to prepare the Droplet.
+```bash
 # update the OS
 apt update && apt upgrade
 
 # install some useful helpers
 apt install tree jq gcc make
+```
 
-# Install Docker
+
+## Install Docker
 The following steps are required to install docker on the Droplet. Reference: https://docs.docker.com/engine/install/ubuntu/
 
+```bash
 # set up the repository
 sudo apt install \
   apt-transport-https \
@@ -36,37 +42,13 @@ apt install docker-ce docker-ce-cli containerd.io
 
 # check the docker version
 docker --version
+```
 
-# Install Docker
-The following steps are required to install docker on the machine. Reference: https://docs.docker.com/engine/install/ubuntu/
+## Install Docker-Compose
 
-# set up the repository
-sudo apt install \
-  apt-transport-https \
-  ca-certificates \
-  curl \
-  gnupg-agent \
-  software-properties-common
-
-# add Docker’s official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
-
-# set up the stable repository
-sudo add-apt-repository \
-  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
-
-# install docker engine
-apt update
-apt install docker-ce docker-ce-cli containerd.io
-
-# check the docker version
-docker --version
-# Install Docker-Compose
 Reference https://docs.docker.com/compose/install/
 
+```bash
 # install docker-compose
 curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
@@ -75,9 +57,12 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 # check the docker-compose version
 docker-compose --version
-# Install Go Programming Language
+```
+
+## Install Go Programming Language
 Hyperledger Fabric uses the Go Programming Language for many of its components. Go version 1.14.x is required.
 
+```bash 
 # download and extract go
 # latest version 04.10.20 1.14.9
 wget -c https://dl.google.com/go/go1.14.9.linux-amd64.tar.gz -O - | tar -xz -C /usr/local
@@ -96,7 +81,11 @@ go version
 
 # check the vars
 printenv | grep PATH
-# Install node.js
+```
+
+## Install node.js
+
+```bash
 # add PPA from NodeSource
 curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
 
@@ -108,7 +97,11 @@ apt-get install -y nodejs
 
 # check the version
 node -v
-# Install Samples, Binaries and Docker Images
+```
+
+## Install Samples, Binaries and Docker Images
+
+```bash
 mkdir fabric
 cd fabric
 
@@ -128,11 +121,15 @@ docker images
 
 # check the bin cmd
 peer version
-# Try the installation
-The fabric-samples provisions a sample Hyperledger Fabric test-network consisting of two organizations, each maintaining one peer nodes. It also will deploy a single RAFT ordering service by default.
+
+```
+
+## Try the installation
+The fabric-samples provisions a sample Hyperledger Fabric test-network consisting of two organizations, each maintaining one peer nodes. It also will deploy a single RAFT ordering service by default. 
 
 To test your installation we can start interacting with the network.
 
+```bash
 # switch to the base folder
 cd fabric-samples/test-network
 
@@ -148,9 +145,12 @@ cd fabric-samples/test-network
 # show if some containers are running
 docker ps
 docker-compose -f docker/docker-compose-test-net.yaml ps
-# Interacting with the network
-tmux control
+```
 
+## Interacting with the network
+
+tmux control
+```bash
 # start a new tmux session
 tmux new -s fabric
 
@@ -168,7 +168,12 @@ CTRL + b + q 1
 
 # detach from session
 CTRL + b + d
-# Environment variables for peer Org1
+
+```
+
+### Environment variables for peer Org1
+
+```bash
 # create an env file
 vi org1.sh
 
@@ -186,8 +191,11 @@ source ./org1.sh
 
 # check env vars
 printenv | grep CORE
-Initialize the ledger (sample data)
+```
+
+#### Initialize the ledger (sample data)
 Run the following command to initialize the ledger with assets:
+```bash
 
 # for explanation
 peer chaincode invoke 
@@ -206,22 +214,42 @@ peer chaincode invoke
 
 # for copy and paste
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n basic --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"function":"InitLedger","Args":[]}'
-# Query the ledger
+```
+
+#### Query the ledger
+
+```bash
 # Read the last state of all assets
 peer chaincode query -C $CHANNEL_NAME -n basic -c '{"Args":["GetAllAssets"]}' | jq .
 
 # Read an asset 
 peer chaincode query -C $CHANNEL_NAME -n basic -c '{"Args":["ReadAsset","asset1"]}' | jq .
-# Create an asset
+```
+
+#### Create an asset
+```bash
+
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n basic --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"function":"CreateAsset","Args":["asset7","green","10","Roland","500"]}'
-Update an asset
+```
+
+#### Update an asset
+```bash
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n basic --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"function":"UpdateAsset","Args":["asset7","green","10","Roland","600"]}'
-# Transfer an asset
+```
+
+#### Transfer an asset
+```bash
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n basic --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"function":"TransferAsset","Args":["asset7","Joana"]}'
-# Delete an asset
+```
+
+#### Delete an asset
+```bash
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C $CHANNEL_NAME -n basic --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"function":"DeleteAsset","Args":["asset1"]}'
-Switch to peer Org2
-We can switch to work with peer Org2 peer0.org2.example.com with changeing the following evironment variables.
+```
+
+### Switch to peer Org2
+We can switch to work with peer Org2 peer0.org2.example.com with changeing the following evironment variables. 
+```bash 
 
 # create an env file
 vi org2.sh
@@ -238,5 +266,9 @@ export CORE_PEER_ADDRESS=localhost:9051
 
 # execute the env file
 source ./org2.sh
-# Bring down the network
+```
+
+## Bring down the network
+```bash
 ./network.sh down
+```
